@@ -63,6 +63,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       }
 
     } catch (error: any) {
+      if (error.response?.status === 404)
       toast.error('Erro na adição do produto')
 
     }
@@ -105,7 +106,8 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       setCart(updatedCart);
       localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart))
 
-    } catch {
+    } catch (error: any) {
+      if (error.response?.status === 404)
       toast.error('Erro na alteração de quantidade do produto');
     }
   };
