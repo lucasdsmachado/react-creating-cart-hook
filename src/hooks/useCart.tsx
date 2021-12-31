@@ -41,20 +41,22 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       // should not be able add a product that does not exist
       const stockCheck = await api.get<UpdateProductAmount>(`/stock/${productId}`).then(response => response.data);
       const productCheck = await api.get<Products>(`/products/${productId}`).then(response => response.data);
-      const [ cartProduct ] = cart.filter(elem => elem.id === productId);
+      const  cartProduct  = cart.find(elem => elem.id === productId);
       // should not be able to increase a product amount when running out of stock
-      if (stockCheck.amount === 1) {
+      if (cartProduct?.amount === stockCheck.amount) {
         toast.error("Quantidade solicitada fora de estoque")
         throw new Error();
       }
+      
       // should be able to increase a product amount when adding a product that already exists on cart
-      if (cart.some(elem => elem.id === productId && stockCheck.amount >= 1)) {
+      if (cartProduct) {
         const newCart = cart.map(product => product.id === productId ? { ...product, amount: product.amount + 1 } : product)
         setCart([...newCart])
         localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart))
       }
+      
       // should be able to add a new product
-      else {
+      else if (!cartProduct) {
         const newCart = [...cart, { ...productCheck, amount: 1 }]
         setCart(newCart);
         localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart))
@@ -88,12 +90,12 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       // should not be able to update a product that does not exist
       const stockCheck = await api.get<UpdateProductAmount>(`/stock/${productId}`).then(response => response.data);
-
+      const [ cartProduct ] = cart.filter(elem => elem.id === productId);
       // should not be able to update a product amount to a value smaller than 1
       if (amount === 0) throw new Error()
 
       // should not be able to increase a product amount when running out of stock
-      if (stockCheck.amount === 1) {
+      if (stockCheck.amount === cartProduct.amount) {
         toast.error("Quantidade solicitada fora de estoque")
         throw new Error();
       }
