@@ -1,6 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'react-toastify';
-import { isExpressionStatement, resolveTypeReferenceDirective } from 'typescript';
 import { api } from '../services/api';
 import { Product, Stock } from '../types';
 
@@ -41,20 +40,20 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       // should not be able add a product that does not exist
       const stockCheck = await api.get<UpdateProductAmount>(`/stock/${productId}`).then(response => response.data);
       const productCheck = await api.get<Products>(`/products/${productId}`).then(response => response.data);
-      const  cartProduct  = cart.find(elem => elem.id === productId);
+      const cartProduct = cart.find(elem => elem.id === productId);
       // should not be able to increase a product amount when running out of stock
       if (cartProduct?.amount === stockCheck.amount) {
         toast.error("Quantidade solicitada fora de estoque")
         throw new Error();
       }
-      
+
       // should be able to increase a product amount when adding a product that already exists on cart
       if (cartProduct) {
         const newCart = cart.map(product => product.id === productId ? { ...product, amount: product.amount + 1 } : product)
         setCart([...newCart])
         localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart))
       }
-      
+
       // should be able to add a new product
       else if (!cartProduct) {
         const newCart = [...cart, { ...productCheck, amount: 1 }]
@@ -64,7 +63,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
     } catch (error: any) {
       if (error.response?.status === 404)
-      toast.error('Erro na adição do produto')
+        toast.error('Erro na adição do produto')
 
     }
   };
@@ -90,8 +89,8 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   }: UpdateProductAmount) => {
     try {
       // should not be able to update a product that does not exist
-      const stockCheck = await api.get<UpdateProductAmount>(`/stock/${productId}`).then(response => response.data);
-      const [ cartProduct ] = cart.filter(elem => elem.id === productId);
+      const stockCheck = await api.get<Stock>(`/stock/${productId}`).then(response => response.data);
+      const [cartProduct] = cart.filter(elem => elem.id === productId);
       // should not be able to update a product amount to a value smaller than 1
       if (amount === 0) throw new Error()
 
@@ -108,7 +107,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
     } catch (error: any) {
       if (error.response?.status === 404)
-      toast.error('Erro na alteração de quantidade do produto');
+        toast.error('Erro na alteração de quantidade do produto');
     }
   };
 
