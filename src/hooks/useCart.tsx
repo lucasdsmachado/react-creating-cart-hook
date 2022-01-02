@@ -90,12 +90,11 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       // should not be able to update a product that does not exist
       const stockCheck = await api.get<Stock>(`/stock/${productId}`).then(response => response.data);
-      const [cartProduct] = cart.filter(elem => elem.id === productId);
       // should not be able to update a product amount to a value smaller than 1
       if (amount === 0) throw new Error()
 
       // should not be able to increase a product amount when running out of stock
-      if (stockCheck.amount === cartProduct.amount) {
+      if (amount > stockCheck.amount) {
         toast.error("Quantidade solicitada fora de estoque")
         throw new Error();
       }
