@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { MdAddShoppingCart } from 'react-icons/md';
 
 import { ProductList } from './styles';
@@ -23,19 +23,20 @@ interface CartItemsAmount {
 
 const Home = (): JSX.Element => {
   const [products, setProducts] = useState<ProductFormatted[]>([]);
-   const { addProduct, cart } = useCart();
+  const { addProduct, cart } = useCart();
 
   const cartItemsAmount = cart.reduce((sumAmount, product) => {
     sumAmount[product.id] = product.amount;
     return sumAmount;
-    }, {} as CartItemsAmount)
+  }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
-      // TODO
-      const unformattedProducts = await api.get<Product[]>(`/products`).then(response => (response.data))
-      const formattedProduct = unformattedProducts.map(elem => ({...elem, priceFormatted: formatPrice(elem.price)}))
-      setProducts(formattedProduct);
+      const products = await api.get<Product[]>(`/products`);
+      const formattedProducts = products.data.map(function (product: Product) {
+        return { ...product, priceFormatted: formatPrice(product.price) }
+      })
+      setProducts(formattedProducts);
     }
 
     loadProducts();
@@ -47,28 +48,28 @@ const Home = (): JSX.Element => {
 
   return (
     <ProductList>
-    { products.map(product => (
-      <li key={product.id}>
-        <img src={product.image} alt="Tênis de Caminhada Leve Confortável" />
-        <strong>{product.title}</strong>
-        <span>{product.priceFormatted}</span>
-        <button
-          type="button"
-          data-testid="add-product-button"
-          onClick={() => handleAddProduct(product.id)}
-        >
-          <div data-testid="cart-product-quantity">
-            <MdAddShoppingCart size={16} color="#FFF" />
-            {cartItemsAmount[product.id] || 0}
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>))
-
-    
-    }
+      {products.map(function (product: ProductFormatted) {
+        return (
+          <li key={product.id}>
+            <img src={product.image} alt="Tênis de Caminhada Leve Confortável" />
+            <strong>{product.title}</strong>
+            <span>{product.priceFormatted}</span>
+            <button
+              type="button"
+              data-testid="add-product-button"
+              onClick={() => handleAddProduct(product.id)}
+            >
+              <div data-testid="cart-product-quantity">
+                <MdAddShoppingCart size={16} color="#FFF" />
+                {cartItemsAmount[product.id] || 0}
+              </div>
+              <span>ADICIONAR AO CARRINHO</span>
+            </button>
+          </li>
+        );
+      })};
     </ProductList>
   );
-};
+}
 
 export default Home;
